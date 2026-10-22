@@ -27,7 +27,7 @@ private suspend fun RoutingContext.handleEcho() {
 
     // Request line: METHOD PATH HTTP/VERSION
     val method = request.httpMethod.value
-    val path = request.uri.toString()
+    val path = request.uri
     val version = "HTTP/1.1"
     responseBuilder.append("$method $path $version\r\n")
 
