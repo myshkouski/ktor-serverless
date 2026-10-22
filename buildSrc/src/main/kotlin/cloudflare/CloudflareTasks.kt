@@ -3,7 +3,6 @@ package cloudflare
 import org.gradle.api.Project
 import org.gradle.api.file.Directory
 import org.gradle.api.tasks.TaskProvider
-import org.gradle.api.Task
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsBinaryMode
 import org.jetbrains.kotlin.gradle.targets.js.ir.JsIrBinary
 import org.jetbrains.kotlin.gradle.targets.js.npm.npmProject

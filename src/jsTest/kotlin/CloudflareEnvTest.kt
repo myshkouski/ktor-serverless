@@ -1,11 +1,13 @@
 package com.example
 
-import io.ktor.client.request.get
+import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import io.ktor.http.HttpStatusCode
+import io.ktor.http.*
 import io.ktor.server.config.*
 import io.ktor.server.testing.*
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class CloudflareEnvTest {
 

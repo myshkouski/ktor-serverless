@@ -2,7 +2,6 @@ package com.example
 
 import io.ktor.server.engine.*
 import io.ktor.server.fetch.*
-import com.example.cloudflareEnv
 
 internal val embeddedServer = embeddedServer(
     Fetch,

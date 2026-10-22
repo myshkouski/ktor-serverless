@@ -176,6 +176,7 @@ fun Application.mainPage() {
                         li { externalLink(href = "https://developers.cloudflare.com/workers/") { +"Cloudflare Workers Documentation" } }
                         li { externalLink(href = "https://developers.cloudflare.com/workers/wrangler/") { +"Wrangler CLI" } }
                         li { externalLink(href = "https://start.ktor.io") { +"Ktor Project Generator" } }
+                        li { externalLink(href = "/openapi.json") { +"OpenAPI Specification (JSON)" } }
                     }
 
                     h2 { +"TODO" }

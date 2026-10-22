@@ -62,7 +62,7 @@ abstract class AssetsExtension @Inject constructor(objects: ObjectFactory) {
         runWorkerFirst.set(true)
     }
 
-    fun runWorkerFirst(patterns: List<String>) {
+    fun runWorkerFirst(patterns: Collection<String>) {
         runWorkerFirst.set(patterns)
     }
 
