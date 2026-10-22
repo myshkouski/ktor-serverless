@@ -1,0 +1,533 @@
+{
+  "$schema": "https://spec.openapis.org/oas/3.1/schema/2024-10-18",
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Ktor on Cloudflare Workers API",
+    "version": "1.0.0",
+    "description": "API specification for the Ktor serverless application deployed on Cloudflare Workers",
+    "contact": {
+      "name": "Ktor Cloudflare Workers Sample",
+      "url": "https://github.com/myshkouski/ktor-serverless-sample"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://{worker-name}.{account-id}.workers.dev",
+      "description": "Cloudflare Workers production deployment",
+      "variables": {
+        "worker-name": {
+          "default": "ktor-serverless-sample",
+          "description": "Name of the Cloudflare Worker"
+        },
+        "account-id": {
+          "default": "your-account-id",
+          "description": "Your Cloudflare account ID"
+        }
+      }
+    },
+    {
+      "url": "http://localhost:8787",
+      "description": "Local development server (wrangler dev)"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Project landing page",
+        "description": "Returns the HTML landing page with project documentation and API reference",
+        "operationId": "getLandingPage",
+        "tags": ["General"],
+        "responses": {
+          "200": {
+            "description": "HTML landing page",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/env": {
+      "get": {
+        "summary": "List public environment variables",
+        "description": "Returns all environment variables prefixed with PUBLIC_ that are configured in the Cloudflare Worker",
+        "operationId": "getPublicEnv",
+        "tags": ["Environment"],
+        "responses": {
+          "200": {
+            "description": "Map of public environment variables",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "example": {
+                    "PUBLIC_GREETING": "Hello from Ktor on Cloudflare Workers!"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/echo": {
+      "get": {
+        "summary": "Echo GET request",
+        "description": "Echoes back the full HTTP request (method, path, headers, and body) as plaintext",
+        "operationId": "echoGet",
+        "tags": ["Echo"],
+        "responses": {
+          "200": {
+            "description": "Echoed request as plaintext",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Echo POST request",
+        "description": "Echoes back the full HTTP request (method, path, headers, and body) as plaintext",
+        "operationId": "echoPost",
+        "tags": ["Echo"],
+        "requestBody": {
+          "description": "Request body to echo back",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Echoed request as plaintext",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Echo PUT request",
+        "description": "Echoes back the full HTTP request (method, path, headers, and body) as plaintext",
+        "operationId": "echoPut",
+        "tags": ["Echo"],
+        "requestBody": {
+          "description": "Request body to echo back",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Echoed request as plaintext",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Echo DELETE request",
+        "description": "Echoes back the full HTTP request (method, path, headers, and body) as plaintext",
+        "operationId": "echoDelete",
+        "tags": ["Echo"],
+        "responses": {
+          "200": {
+            "description": "Echoed request as plaintext",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Echo PATCH request",
+        "description": "Echoes back the full HTTP request (method, path, headers, and body) as plaintext",
+        "operationId": "echoPatch",
+        "tags": ["Echo"],
+        "requestBody": {
+          "description": "Request body to echo back",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Echoed request as plaintext",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "head": {
+        "summary": "Echo HEAD request",
+        "description": "Echoes back the full HTTP request (method, path, headers) as plaintext",
+        "operationId": "echoHead",
+        "tags": ["Echo"],
+        "responses": {
+          "200": {
+            "description": "Echoed request as plaintext",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "options": {
+        "summary": "Echo OPTIONS request",
+        "description": "Echoes back the full HTTP request (method, path, headers) as plaintext",
+        "operationId": "echoOptions",
+        "tags": ["Echo"],
+        "responses": {
+          "200": {
+            "description": "Echoed request as plaintext",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/kv/{scope}": {
+      "get": {
+        "summary": "List all keys in a KV namespace scope",
+        "description": "Returns a list of all keys stored in the specified scope within the Cloudflare KV namespace. The scope must be a valid UUID used as a prefix for key isolation.",
+        "operationId": "listKvKeys",
+        "tags": ["KV Storage"],
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "path",
+            "description": "UUID scope for key isolation in KV namespace",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+            },
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of keys in the scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "example": ["user:1", "user:2", "config:theme"]
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid scope format - must be a valid UUID",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/kv/{scope}/{key}": {
+      "get": {
+        "summary": "Get a value by key from KV storage",
+        "description": "Retrieves the value associated with the given key in the specified scope. Returns the value as plain text, or 'null' if the key doesn't exist.",
+        "operationId": "getKvValue",
+        "tags": ["KV Storage"],
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "path",
+            "description": "UUID scope for key isolation in KV namespace",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+            },
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          {
+            "name": "key",
+            "in": "path",
+            "description": "Key to retrieve from KV storage",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "user:1"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Value associated with the key (or 'null' if not found)",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid scope format - must be a valid UUID",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Store a value in KV storage",
+        "description": "Stores the provided value with the given key in the specified scope. Supports optional TTL (time-to-live) parameter via query string.",
+        "operationId": "putKvValue",
+        "tags": ["KV Storage"],
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "path",
+            "description": "UUID scope for key isolation in KV namespace",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+            },
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          {
+            "name": "key",
+            "in": "path",
+            "description": "Key to store the value under",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "user:1"
+          },
+          {
+            "name": "ttl",
+            "in": "query",
+            "description": "Time-to-live in seconds (1-600, default: 600)",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 600,
+              "default": 600
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Value to store (plain text)",
+          "required": true,
+          "content": {
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Value stored successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "const": "ok"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid scope format or TTL out of range",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a value from KV storage",
+        "description": "Deletes the value associated with the given key in the specified scope.",
+        "operationId": "deleteKvValue",
+        "tags": ["KV Storage"],
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "path",
+            "description": "UUID scope for key isolation in KV namespace",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+            },
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          {
+            "name": "key",
+            "in": "path",
+            "description": "Key to delete from KV storage",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "user:1"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Value deleted successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "const": "deleted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid scope format - must be a valid UUID",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "EnvVariables": {
+        "type": "object",
+        "description": "Map of public environment variables (prefixed with PUBLIC_)",
+        "additionalProperties": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "General",
+      "description": "General endpoints"
+    },
+    {
+      "name": "Environment",
+      "description": "Environment variable access"
+    },
+    {
+      "name": "Echo",
+      "description": "Request echo endpoints for debugging"
+    },
+    {
+      "name": "KV Storage",
+      "description": "Cloudflare KV namespace operations with scoped isolation"
+    }
+  ]
+}

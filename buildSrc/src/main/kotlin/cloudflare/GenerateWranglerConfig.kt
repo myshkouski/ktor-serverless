@@ -35,6 +35,18 @@ abstract class GenerateWranglerConfig : DefaultTask() {
     @get:Input
     abstract val kvNamespaces: ListProperty<String>
 
+    @get:Input
+    abstract val assetsDirectory: Property<String>
+
+    @get:Input
+    abstract val assetsBinding: Property<String>
+
+    @get:Input
+    abstract val assetsRunWorkerFirst: Property<Any>
+
+    @get:Input
+    abstract val assetsNotFoundHandling: Property<String>
+
     @get:InputFile
     abstract val workerFile: RegularFileProperty
 
@@ -59,29 +71,63 @@ abstract class GenerateWranglerConfig : DefaultTask() {
             }
         }
 
-        val config = linkedMapOf<String, Any>(
+        val wranglerConfig = linkedMapOf<String, Any>(
             "compatibility_date" to compatibilityDate.get(),
             "name" to workerName.get()
         )
 
         compatibilityFlags.get().takeIf { it.isNotEmpty() }?.let {
-            config["compatibility_flags"] = it
+            wranglerConfig["compatibility_flags"] = it
         }
-        config["main"] = relativePath(worker)
-        config["base_dir"] = relativePath(worker.parentFile)
+        wranglerConfig["main"] = relativePath(worker)
+        wranglerConfig["base_dir"] = relativePath(worker.parentFile)
         vars.get().takeIf { it.isNotEmpty() }?.let {
-            config["vars"] = it
+            wranglerConfig["vars"] = it
         }
         kvNamespaces.get().takeIf { it.isNotEmpty() }?.let { bindings ->
-            config["kv_namespaces"] = bindings.map { mapOf("binding" to it) }
+            wranglerConfig["kv_namespaces"] = bindings.map { mapOf("binding" to it) }
         }
         keepVars.orNull?.let {
-            config["keep_vars"] = it
+            wranglerConfig["keep_vars"] = it
+        }
+
+        // Add assets configuration if directory is set
+        val assetsDir = assetsDirectory.getOrNull()
+        if (assetsDir != null && assetsDir.isNotEmpty()) {
+            val assetsConfig = linkedMapOf<String, Any>()
+            assetsConfig["directory"] = assetsDir
+
+            assetsBinding.getOrNull()?.let { binding ->
+                if (binding.isNotEmpty()) {
+                    assetsConfig["binding"] = binding
+                }
+            }
+
+            assetsRunWorkerFirst.getOrNull()?.let { runWorkerFirst ->
+                when (runWorkerFirst) {
+                    is List<*> -> if (runWorkerFirst.isNotEmpty()) assetsConfig["run_worker_first"] = runWorkerFirst
+                    is Boolean -> if (runWorkerFirst) assetsConfig["run_worker_first"] = true
+                }
+            }
+
+            assetsNotFoundHandling.getOrNull()?.let { handling ->
+                if (handling.isNotEmpty() && handling != NotFoundHandling.NONE.value) {
+                    val validValues = NotFoundHandling.values().map { it.value }
+                    require(handling in validValues) {
+                        "Invalid not_found_handling value: '$handling'. Must be one of: ${validValues.joinToString(", ")}"
+                    }
+                    assetsConfig["not_found_handling"] = handling
+                }
+            }
+
+            if (assetsConfig.isNotEmpty()) {
+                wranglerConfig["assets"] = assetsConfig
+            }
         }
 
         configFile.parentFile.mkdirs()
         configFile.writeText(
-            JsonOutput.prettyPrint(JsonOutput.toJson(config)) + "\n"
+            JsonOutput.prettyPrint(JsonOutput.toJson(wranglerConfig)) + "\n"
         )
 
         val deployConfig = deployConfigFile.get().asFile

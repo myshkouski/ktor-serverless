@@ -3,6 +3,7 @@ package cloudflare
 import org.gradle.api.Project
 import org.gradle.api.file.Directory
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.api.Task
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsBinaryMode
 import org.jetbrains.kotlin.gradle.targets.js.ir.JsIrBinary
 import org.jetbrains.kotlin.gradle.targets.js.npm.npmProject
@@ -23,6 +24,7 @@ internal fun registerCloudflareTasks(project: Project, binary: JsIrBinary) {
     }
     val workerTaskName = "generate${suffix}CloudflareWorker"
     val wranglerTaskName = "generate${suffix}WranglerConfig"
+    val copyAssetsTaskName = "copy${suffix}CloudflareAssets"
 
     if (project.tasks.findByName(workerTaskName) != null) return
 
@@ -55,15 +57,37 @@ internal fun registerCloudflareTasks(project: Project, binary: JsIrBinary) {
         workerFile.set(config.outputFile)
         outputFile.set(config.wranglerConfig.outputFile)
         deployConfigFile.set(config.wranglerConfig.deployConfigFile)
+
+        // Assets configuration - use the copied assets directory (./assets) for wrangler
+        // since that's where files are at runtime (relative to cloudflare/ dir)
+        assetsDirectory.set("./assets")
+        assetsBinding.set(config.wranglerConfig.assets.binding.getOrElse(""))
+        assetsRunWorkerFirst.set(config.wranglerConfig.assets.runWorkerFirst.getOrElse(emptyList<Any>()))
+        assetsNotFoundHandling.set(config.wranglerConfig.assets.notFoundHandling.getOrElse(NotFoundHandling.NONE.value))
         dependsOn(generateWorker)
+    }
+
+    // Register assets copy task if assets directory is configured
+    val copyAssets = project.tasks.register(copyAssetsTaskName, CopyCloudflareAssets::class.java) {
+        description = "Copies static assets to the Cloudflare output directory."
+        group = "cloudflare"
+        assetsSourceDir.set(config.wranglerConfig.assets.directory)
+        sourceDir.set(project.objects.directoryProperty().convention(project.layout.projectDirectory.dir(config.wranglerConfig.assets.directory)))
+        destinationDir.set(cloudflareDir.map { it.dir("assets") })
+        dependsOn(generateWrangler)
+        mustRunAfter(generateWrangler)
     }
 
     project.tasks.matching { it.name == "build" }.configureEach {
         dependsOn(generateWrangler)
+        // Also depend on copyAssets if assets are configured
+        config.wranglerConfig.assets.directory.getOrNull()?.takeIf { it.isNotEmpty() }?.let {
+            dependsOn(copyAssets)
+        }
     }
 
     // Register wranglerDev and wranglerDeploy tasks (only once per project)
-    registerWranglerLifecycleTasks(project, packageDir, generateWrangler)
+    registerWranglerLifecycleTasks(project, binary, packageDir, generateWrangler)
 }
 
 /**
@@ -72,6 +96,7 @@ internal fun registerCloudflareTasks(project: Project, binary: JsIrBinary) {
  */
 private fun registerWranglerLifecycleTasks(
     project: Project,
+    binary: JsIrBinary,
     packageDir: org.gradle.api.provider.Provider<Directory>,
     generateWrangler: TaskProvider<GenerateWranglerConfig>
 ) {
@@ -82,6 +107,10 @@ private fun registerWranglerLifecycleTasks(
 
     val objects = project.objects
 
+    // Ensure the Kotlin/JS package is built - depend on jsPackageJson task
+    // which creates the npmProject directory structure
+    val packageJsonTask = project.tasks.named("jsPackageJson")
+
     project.tasks.register(devTaskName, WranglerDevTask::class.java) {
         description = "Runs wrangler dev for local Cloudflare Workers development."
         group = "cloudflare"
@@ -90,6 +119,7 @@ private fun registerWranglerLifecycleTasks(
         envProperty.convention(emptyMap())
         env.set(envProperty)
         dependsOn(generateWrangler)
+        dependsOn(packageJsonTask)
     }
 
     project.tasks.register(deployTaskName, WranglerDeployTask::class.java) {
@@ -103,6 +133,7 @@ private fun registerWranglerLifecycleTasks(
         argsProperty.convention(emptyList())
         args.set(argsProperty)
         dependsOn(generateWrangler)
+        dependsOn(packageJsonTask)
     }
 
     // Also register wranglerDeploy with --env production for convenience
@@ -119,6 +150,7 @@ private fun registerWranglerLifecycleTasks(
             argsProperty.convention(listOf("--env", "production"))
             args.set(argsProperty)
             dependsOn(generateWrangler)
+            dependsOn(packageJsonTask)
         }
     }
 }

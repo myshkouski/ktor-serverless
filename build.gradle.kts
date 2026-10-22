@@ -1,4 +1,5 @@
 import cloudflare.cloudflare
+import cloudflare.NotFoundHandling
 
 plugins {
     id("org.jetbrains.kotlin.multiplatform")
@@ -26,6 +27,15 @@ kotlin {
                     "PUBLIC_GREETING", "Hello from Ktor on Cloudflare Workers!"
                 )
                 kv("CACHE")
+
+                // Assets configuration - serves static files from resources/assets/public
+                assets {
+                    directory = "src/jsMain/resources/assets/public"
+                    binding = "ASSETS"
+                    notFoundHandling = NotFoundHandling.NONE.value
+                    // Run worker first for API routes, but not for API docs
+                    runWorkerFirst(listOf("/api/*", "!/api/docs/*"))
+                }
             }
         }
 
