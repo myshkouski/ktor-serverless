@@ -2,6 +2,8 @@
 
 This project demonstrates how to run a **Ktor server application on Cloudflare Workers** using **Kotlin/JS** and **Kotlin Multiplatform**.
 
+[Public instance](https://ktor-serverless-sample.alexeimyshkouski.workers.dev)
+
 ## Motivation
 
 Traditional serverless platforms often require you to write code in JavaScript/TypeScript, Python, or Go. If you're a Kotlin developer, you either have to:
