@@ -52,7 +52,7 @@ By compiling Kotlin to JavaScript via Kotlin/JS, we get the best of both worlds:
 | **Kotlin Multiplatform** | Share routing, serialization, and business logic across platforms |
 | **Cloudflare KV Integration** | Type-safe key-value storage with scoped namespaces |
 | **Environment Variables** | Secure config via Wrangler vars/secrets with public/private distinction |
-| **Custom Gradle Plugin** | `cloudflare` extension for Wrangler config generation and deployment |
+| **Custom Gradle Plugin** | `cloudflare` extension for Wrangler config generation and deployment (`wranglerDev`, `wranglerDeploy`, `wranglerDeployProduction`) |
 | **AsyncAPI Support** | Generate API specs from Ktor routes (via `asyncapi-ktor`) |
 
 ## Project Structure
@@ -88,24 +88,35 @@ src/
 # Build the project
 ./gradlew build
 
-# Run locally with Wrangler dev server
-./gradlew cloudflareWorkersDev
+# Run locally with Wrangler dev server (hot reload)
+./gradlew wranglerDev
 ```
 
 If the server starts successfully, you'll see:
 ```
-2024-12-04 14:32:45.584 [main] INFO  Application - Application started in 0.303 seconds.
-2024-12-04 14:32:45.682 [main] INFO  Application - Responding at http://0.0.0.0:8080
+⛅️ wrangler 4.x.x
+--------------------
+Your worker has access to the following bindings:
+- KV Namespaces: CACHE
+- Vars: PUBLIC_GREETING
+--------------------
+Listening on http://localhost:8787
 ```
 
 ### Deploy to Cloudflare Workers
 
 ```bash
-# Build and deploy to Cloudflare
-./gradlew cloudflareWorkersDeploy
+# Build and deploy to Cloudflare (preview/staging)
+./gradlew wranglerDeploy
+
+# Build and deploy to production
+./gradlew wranglerDeployProduction
 ```
 
-This generates a `wrangler.toml`, bundles the JS output, and pushes to Cloudflare.
+These tasks automatically:
+1. Build the Kotlin/JS production bundle
+2. Generate `wrangler.json` from the `cloudflare {}` DSL config
+3. Run `npx wrangler deploy` from the generated package directory
 
 ## API Endpoints
 

@@ -1,6 +1,8 @@
 package cloudflare
 
 import org.gradle.api.Project
+import org.gradle.api.file.Directory
+import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsBinaryMode
 import org.jetbrains.kotlin.gradle.targets.js.ir.JsIrBinary
 import org.jetbrains.kotlin.gradle.targets.js.npm.npmProject
@@ -58,6 +60,66 @@ internal fun registerCloudflareTasks(project: Project, binary: JsIrBinary) {
 
     project.tasks.matching { it.name == "build" }.configureEach {
         dependsOn(generateWrangler)
+    }
+
+    // Register wranglerDev and wranglerDeploy tasks (only once per project)
+    registerWranglerLifecycleTasks(project, packageDir, generateWrangler)
+}
+
+/**
+ * Registers wranglerDev and wranglerDeploy tasks that run `npx wrangler dev` and `npx wrangler deploy`.
+ * These tasks are registered only once per project, when the first Cloudflare binary is configured.
+ */
+private fun registerWranglerLifecycleTasks(
+    project: Project,
+    packageDir: org.gradle.api.provider.Provider<Directory>,
+    generateWrangler: TaskProvider<GenerateWranglerConfig>
+) {
+    val devTaskName = "wranglerDev"
+    val deployTaskName = "wranglerDeploy"
+
+    if (project.tasks.findByName(devTaskName) != null) return
+
+    val objects = project.objects
+
+    project.tasks.register(devTaskName, WranglerDevTask::class.java) {
+        description = "Runs wrangler dev for local Cloudflare Workers development."
+        group = "cloudflare"
+        workingDir.set(objects.directoryProperty().convention(packageDir))
+        val envProperty = objects.mapProperty(String::class.java, String::class.java)
+        envProperty.convention(emptyMap())
+        env.set(envProperty)
+        dependsOn(generateWrangler)
+    }
+
+    project.tasks.register(deployTaskName, WranglerDeployTask::class.java) {
+        description = "Deploys the Cloudflare Worker using wrangler deploy."
+        group = "cloudflare"
+        workingDir.set(objects.directoryProperty().convention(packageDir))
+        val envProperty = objects.mapProperty(String::class.java, String::class.java)
+        envProperty.convention(emptyMap())
+        env.set(envProperty)
+        val argsProperty = objects.listProperty(String::class.java)
+        argsProperty.convention(emptyList())
+        args.set(argsProperty)
+        dependsOn(generateWrangler)
+    }
+
+    // Also register wranglerDeploy with --env production for convenience
+    val deployProdTaskName = "wranglerDeployProduction"
+    if (project.tasks.findByName(deployProdTaskName) == null) {
+        project.tasks.register(deployProdTaskName, WranglerDeployTask::class.java) {
+            description = "Deploys the Cloudflare Worker to production environment."
+            group = "cloudflare"
+            workingDir.set(objects.directoryProperty().convention(packageDir))
+            val envProperty = objects.mapProperty(String::class.java, String::class.java)
+            envProperty.convention(emptyMap())
+            env.set(envProperty)
+            val argsProperty = objects.listProperty(String::class.java)
+            argsProperty.convention(listOf("--env", "production"))
+            args.set(argsProperty)
+            dependsOn(generateWrangler)
+        }
     }
 }
 
